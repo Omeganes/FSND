@@ -49,7 +49,8 @@ returns status code 200 and json {"success": True, "drinks": drinks} where drink
 
 
 @app.route('/drinks-detail')
-def read_drink_details():
+@requires_auth('get:drinks-detail')
+def read_drink_details(jwt):
     drinks = Drink.query.all()
     formatted_drinks = [drink.long() for drink in drinks]
     return jsonify({
@@ -70,7 +71,8 @@ returns status code 200 and json {"success": True, "drinks": drink} where drink 
 
 
 @app.route('/drinks', methods=['POST'])
-def create_drink():
+@requires_auth('post:drinks')
+def create_drink(jwt):
     body = request.get_json()
     try:
         title = body.get('title')
@@ -99,7 +101,8 @@ returns status code 200 and json {"success": True, "drinks": drink} where drink 
 
 
 @app.route('/drinks/<int:drink_id>', methods=['PATCH'])
-def edit_drink_details(drink_id):
+@requires_auth('patch:drinks')
+def edit_drink_details(jwt, drink_id):
     drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
     if not drink:
         abort(404)
@@ -131,7 +134,8 @@ returns status code 200 and json {"success": True, "delete": id} where id is the
 
 
 @app.route('/drinks/<int:drink_id>', methods=['DELETE'])
-def delete_drink(drink_id):
+@requires_auth('delete:drinks')
+def delete_drink(jwt, drink_id):
     drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
     if not drink:
         abort(404)
@@ -181,3 +185,13 @@ def server_internal_error(error):
         "error": 500,
         "message": "server internal error"
     }), 500
+
+
+@app.errorhandler(AuthError)
+def auth_err(auth_error):
+    # print(error)
+    return jsonify({
+        "success": False,
+        "error": auth_error.status_code,
+        "message": auth_error.error['description'],
+    }), 401

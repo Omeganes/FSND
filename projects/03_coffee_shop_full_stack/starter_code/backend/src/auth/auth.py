@@ -1,5 +1,5 @@
 import json
-from flask import request  # _request_ctx_stack
+from flask import request, abort  # _request_ctx_stack
 from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
@@ -113,8 +113,8 @@ verify_decode_jwt(token) method
 
 
 def verify_decode_jwt(token):
-    JsonUrl = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
-    jwks = json.loads(JsonUrl.read())
+    jsonurl = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
+    jwks = json.loads(jsonurl.read())
     unverified_header = jwt.get_unverified_header(token)
     rsa_key = {}
     if 'kid' not in unverified_header:
@@ -161,9 +161,9 @@ def verify_decode_jwt(token):
                 'description': 'Unable to parse authentication token.'
             }, 400)
     raise AuthError({
-        'code': 'invalid_header',
-        'description': 'Unable to find the appropriate key.'
-    }, 400)
+                'code': 'invalid_header',
+                'description': 'Unable to find the appropriate key.'
+            }, 400)
 
 
 '''
@@ -182,13 +182,12 @@ def requires_auth(permission=''):
     def require_auth_decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
-            token = get_token_auth_header()
+            jwt = get_token_auth_header()
             try:
-                payload = verify_decode_jwt(token)
+                payload = verify_decode_jwt(jwt)
             except Exception:
                 abort(401)
             check_permissions(permission, payload)
             return f(payload, *args, **kwargs)
-
         return wrapper
     return require_auth_decorator
