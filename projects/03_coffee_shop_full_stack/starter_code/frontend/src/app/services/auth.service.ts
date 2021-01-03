@@ -39,7 +39,7 @@ export class AuthService {
     if ( fragment[0] === 'access_token' ) {
       // add the access token to the jwt
       this.token = fragment[1];
-      // save jwts to localstore
+      // save jwts to local store
       this.set_jwt();
     }
   }
