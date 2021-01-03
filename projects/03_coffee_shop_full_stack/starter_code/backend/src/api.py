@@ -11,9 +11,11 @@ app = Flask(__name__)
 setup_db(app)
 CORS(app)
 
-# @app.route('/')
-# def hello():
-#     return "hello world!"
+
+@app.route('/authorize')
+def hello():
+    return "hello world!"
+
 
 '''
 @TODO uncomment the following line to initialize the database
